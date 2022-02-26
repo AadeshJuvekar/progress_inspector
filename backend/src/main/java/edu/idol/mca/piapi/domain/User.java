@@ -9,5 +9,6 @@ public class User {
 	private String name;
 	private String loginName;
 	private String pwd;
+	private Task task;
 	
 }
