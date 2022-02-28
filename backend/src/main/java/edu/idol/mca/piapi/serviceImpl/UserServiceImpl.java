@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import ch.qos.logback.classic.Logger;
 import edu.idol.mca.piapi.domain.Task;
 import edu.idol.mca.piapi.domain.User;
+import edu.idol.mca.piapi.exception.UserAlreadyExistException;
 import edu.idol.mca.piapi.repository.TaskRepository;
 import edu.idol.mca.piapi.repository.UserRepository;
 import edu.idol.mca.piapi.service.UserService;
@@ -29,10 +30,25 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private TaskRepository taskRepository;
+	
+	
+	//************************************************************* PRODUCTOWNER OPERATIONS *********************************************************************************
 
+	//-------------------------------------------------------------- USER CRUD OPERATIONS -------------------------------------------------------------------
 	@Override
 	public User saveUser(User user) {
-
+		
+		//Check for null values
+		if(user.getLoginName()==null|| user.getPwd()==null||user.getName()==null) {
+			throw new NullPointerException("Please fill the required fields");
+		}
+		
+		//Check if user already exists
+		if(userRepository.findByLoginName(user.getLoginName())!=null) {
+			throw new UserAlreadyExistException("User with "+ user.getLoginName() +" already exists");
+		}
+		
+		//Register New User
 		return userRepository.save(user);
 	}
 
@@ -57,6 +73,7 @@ public class UserServiceImpl implements UserService {
 		return userRepository.findByLoginName(loginName);
 	}
 
+	//------------------------------------------------------- TASK OPERATIONS -------------------------------------------------------------------------------------
 	@Override
 	public List<Task> getAllTasks(HttpSession session) {
 		List<Task> tasks=new ArrayList<>();
@@ -78,6 +95,7 @@ public class UserServiceImpl implements UserService {
 		return savedTask;
 	}
 
+	//----------------------------------------------------------- USER LOGIN -------------------------------------------------------------------------------
 	@Override
 	public User authenticateUser(String loginName, String pwd, HttpSession session) {	
 		User user= userRepository.findByLoginName(loginName);
@@ -90,7 +108,8 @@ public class UserServiceImpl implements UserService {
 		session.setAttribute("loginName", user.getLoginName());	
 		return user;
 	}
-
+	
+	//------------------------------------------------------- USERTYPE : CLIENT OPERATIONS -------------------------------------------------------------------------------------
 	@Override
 	public User addTasktoUser(String loginName, String taskIdentifier) {
 		// TODO Auto-generated method stub
@@ -102,4 +121,5 @@ public class UserServiceImpl implements UserService {
 		return userRepository.findAllByUserType("Client");
 	}
 
+	//******************************************************************************************************************************************************************
 }

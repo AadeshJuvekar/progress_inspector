@@ -17,7 +17,6 @@ import org.springframework.validation.FieldError;
 public class MapValidationErrorService {
 	/**
 	 * This method is used to process the errors in the result of the validation
-	 * 
 	 * @param result of the validation
 	 * @return ResponseEntity with errors if found otherwise null.
 	 */
