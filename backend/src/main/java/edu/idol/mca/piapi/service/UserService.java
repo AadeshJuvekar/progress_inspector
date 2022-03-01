@@ -35,5 +35,7 @@ public interface UserService {
 	
 	public User addTasktoUser(String loginName, String taskIdentifier);
 	
-	public List<User> getAllUsers();
+	//public List<User> getAllUsers();
+
+	public List<User> getAllUsersByUserType(String userType);
 }

@@ -116,9 +116,14 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 
-	@Override
+	/*@Override
 	public List<User> getAllUsers() {
 		return userRepository.findAllByUserType("Client");
+	}*/
+
+	@Override
+	public List<User> getAllUsersByUserType(String userType) {
+		return userRepository.findAllByUserType(userType);
 	}
 
 	//******************************************************************************************************************************************************************
