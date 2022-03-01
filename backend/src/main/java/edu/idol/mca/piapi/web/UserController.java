@@ -39,23 +39,24 @@ public class UserController {
 	private MapValidationErrorService errorService;
 	
 	/**
-	 * Method for handling User login and creating session.
+	 * Method for handling Product Owner login and creating session.
 	 * 
-	 * @param user
+	 * @param productOwner
 	 * @param result       contains the result and error of validation
 	 * @param session      Creates New Session
-	 * @return 	Response Entity with logged In User with HTTP Status
+	 * @return Response Entity with logged In Product Owner with HTTP Status
 	 */
-	@GetMapping("/login")
-	public ResponseEntity<?> loginUser(@Valid @RequestBody String loginName, String pwd, HttpSession session, BindingResult result){
+	@PostMapping("/login")
+	public ResponseEntity<?> handleUserLogin(@RequestBody User user, BindingResult result,
+			HttpSession session) {
 		ResponseEntity<?> errorMap = errorService.mapValidationError(result);
-		if(errorMap!=null) return errorMap;
-		
-		
-		User loggedInUser= userService.authenticateUser(loginName, pwd, session);
-		//return new ResponseEntity<User>(loggedInUser,HttpStatus.OK);
-		return new ResponseEntity<String>(loginName,HttpStatus.OK);
-		
+		if (errorMap != null) {
+			return errorMap;
+		}
+		User loggedInOwner = userService.authenticateUser(user.getLoginName(),
+				user.getPwd(), session);
+		//return new ResponseEntity<User>(loggedInUser, HttpStatus.OK);
+		return new ResponseEntity<String>("Login Successful", HttpStatus.OK);
 	}
 
 	/**
@@ -172,7 +173,7 @@ public class UserController {
 	/**
 	 * Method to authorize client to view task
 	 * 
-	 * @param clientLoginName
+	 * @param loginName
 	 * @param taskIdentifier
 	 * @return client if task is authorized
 	 */
@@ -202,8 +203,8 @@ public class UserController {
 	@GetMapping("/all")
 	public ResponseEntity<?> getUsers(HttpSession session) {
 		if (session.getAttribute("userType") != null && session.getAttribute("userType").equals("ProductOwner")) {
-			List<User> owners = userService.findAll();
-			return new ResponseEntity<List<User>>(owners, HttpStatus.OK);
+			List<User> user = userService.findAll();
+			return new ResponseEntity<List<User>>(user, HttpStatus.OK);
 		}
 		return new ResponseEntity<String>("You do not have Access!!!", HttpStatus.UNAUTHORIZED);
 	}
