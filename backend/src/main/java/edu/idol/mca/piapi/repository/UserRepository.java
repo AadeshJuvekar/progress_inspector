@@ -15,13 +15,29 @@ import edu.idol.mca.piapi.domain.User;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-	
+	/**
+	 * This deleteByLoginName method will delete the User by loginName from the database.
+	 * @param loginName of User to be deleted.
+	 */
 	public void deleteByLoginName(String loginName);
-	
+	/**
+	 * This findByLoginName method will return the User by loginName from the database.
+	 * @param loginName of User to be found.
+	 * @return User if found otherwise null.
+	 */
 	public User findByLoginName(String loginName);
-	
+	/**
+	 * This findByLoginName method will return the User by loginName and password from the database.
+	 * @param loginName of User to be found.
+	 * @param pwd of User to be found.
+	 * @return User if found otherwise null.
+	 */
 	public User findByLoginNameAndPwd(String loginName, String pwd);
-
-	public List<User> findAllByUserType(String string);
+	/**
+	 * This findByUserType method will return the User by UserType from the database.
+	 * @param UserType of User to be found.
+	 * @return User if found otherwise null.
+	 */
+	public List<User> findByUserType(String userType);
 
 }

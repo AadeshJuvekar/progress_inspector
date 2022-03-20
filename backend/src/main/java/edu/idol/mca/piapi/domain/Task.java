@@ -179,6 +179,10 @@ public class Task {
 				+ description + ", progress=" + progress + ", user=" + user + ", createdAt=" + createdAt
 				+ ", updatedAt=" + updatedAt + ", remarks=" + remarks + "]";
 	}
+
+    public Object getTaskIdentifier() {
+        return null;
+    }
 	
 	
 }
