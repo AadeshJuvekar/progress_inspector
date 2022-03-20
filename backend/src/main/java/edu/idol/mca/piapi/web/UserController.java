@@ -225,6 +225,5 @@ public class UserController {
 //			return new ResponseEntity<HttpSession>(session, HttpStatus.OK);
 			
 
-	}
 
 }
