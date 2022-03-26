@@ -1,23 +1,17 @@
-import logo from "./logo.svg";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import {
-//   solid,
-//   regular,
-//   brands,
-// } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
 import "./App.css";
+import Topbar from "./components/topbar/Topbar";
+import Footer from "./components/footer/Footer";
+import Login from "./components/pages/login/Login";
+import Landing from "./components/pages/home/Landing";
 
 function App() {
   return (
     <div className="App">
-      <header>
-        <i class="fa-brands fa-github fa-stack-1x"></i>
-        <br />
-        {/* <FontAwesomeIcon icon={solid("user-secret")} /> */}
-        <p>Progress Inspector</p>
-      </header>
+      <Topbar />
+      {/* <Landing/> */}
+      <Login />
+      <Footer />
     </div>
   );
 }
-
 export default App;
