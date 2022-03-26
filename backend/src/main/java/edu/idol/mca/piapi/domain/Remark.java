@@ -51,9 +51,9 @@ public class Remark {
 	/**
 	 * Many remarks are assigned to the task
 	 */
-	@ManyToOne(fetch= FetchType.EAGER, cascade = CascadeType.REFRESH)
-	@JoinColumn(name = "task_id", updatable= false, nullable= false)
 	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "task_id", updatable= false, nullable= false)	
 	private Task task;
 
 	public Remark() {

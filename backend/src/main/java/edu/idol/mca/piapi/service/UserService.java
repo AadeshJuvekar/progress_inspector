@@ -4,6 +4,7 @@
 package edu.idol.mca.piapi.service;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
@@ -49,7 +50,7 @@ public interface UserService {
 	 * This method will return list of tasks 
 	 * @return list of tasks
 	 */
-	public List<Task> getAllTasks(HttpSession session);
+	public Set<Task> getAllTasks(HttpSession session);
 	/**
 	 * This method is used to return task by taskIdentifier
 	 * @param taskIdentifier of the task
@@ -94,7 +95,7 @@ public interface UserService {
 	 * @param task_id is the unique identifier of the task for which remark is to be added.
 	 * @return the saved Remark Object.
 	 */
-	public Remark addRemark(Remark remark, String taskIdentifier);
+	public Task addRemark(Remark remark, String taskIdentifier);
 	
 	/**
 	 * This method is used to update the task status
@@ -126,7 +127,7 @@ public interface UserService {
 	 * @param loginName of the user
 	 * @return user with assigned task
 	 */
-	public User assignDeveloper(String taskIdentifier, String loginName);
+	public Task assignDeveloper(String taskIdentifier, String loginName);
 	
 	public Task updateTaskStatus(String taskIdentifier, String loginName, String progress);
 	

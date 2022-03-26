@@ -4,10 +4,15 @@
 package edu.idol.mca.piapi.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +35,9 @@ import edu.idol.mca.piapi.service.UserService;
 @Service
 public class UserServiceImpl implements UserService {
 	
+	
+	private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
+
 	@Autowired
 	private UserRepository userRepository;
 	
@@ -126,10 +134,10 @@ public class UserServiceImpl implements UserService {
 	
 	//------------------------------------------------------- TASK OPERATIONS -------------------------------------------------------------------------------------
 	@Override
-	public List<Task> getAllTasks(HttpSession session) {
-		List<Task> tasks=new ArrayList<>();
+	public Set<Task> getAllTasks(HttpSession session) {
+		Set<Task> tasks=new HashSet<>();
 		User user= userRepository.findByLoginName((String)session.getAttribute("loginName"));
-		tasks=user.getTasks();
+		tasks=user.getAssignedTasks();
 		if (tasks==null) {
 			throw new TaskNotFoundException("Tasks not available");
 		}
@@ -144,7 +152,7 @@ public class UserServiceImpl implements UserService {
 			throw new NullPointerException("Please Provide Task Identifier");
 		}
 		User user = userRepository.findByLoginName((String) session.getAttribute("loginName"));
-		List<Task> tasks = user.getTasks();
+		Set<Task> tasks = user.getAssignedTasks();
 		for (Task task : tasks) {
 			if (task.getTaskIdentifier().equals(taskIdentifier)) {
 				savedTask= task;
@@ -166,7 +174,7 @@ public class UserServiceImpl implements UserService {
 		}
 		// Task task1 = taskRepository.findByTaskIdentifier(taskIdentifier);
 		Task task1 = new Task();
-		for (Task t : user.getTasks()) {
+		for (Task t : user.getAssignedTasks()) {
 			if (t.getTaskIdentifier().equals(taskIdentifier)) {
 				task1 = t;
 			}
@@ -182,45 +190,72 @@ public class UserServiceImpl implements UserService {
 	public Task createTask(Task task, String ownerLoginName, String leaderLoginName) {
 		User owner = userRepository.findByLoginName(ownerLoginName);
 		if (owner == null) {
-			// TODO User Not Found Exception
 			throw new UserNotFoundException("Product Owner Not Found");
 		}
 		User leader = userRepository.findByLoginName(leaderLoginName);
 		if (leader == null) {
 			throw new UserNotFoundException("Team Leader not found");
 		}
+		if (taskRepository.findByTaskIdentifier(task.getTaskIdentifier()) != null) {
+			throw new TaskIdException("Task id " + task.getTaskIdentifier().toUpperCase() + " is already exists");
+		}
 		task.setTaskIdentifier(task.getTaskIdentifier().toUpperCase());
 		task.setProgress("Pending");
-		List<Task> userTaskList = owner.getTask();
-		userTaskList.add(task);
-		owner.setTasks(userTaskList);
-		task.setUser(owner);
-		if (taskRepository.findByTaskIdentifier(task.getTaskIdentifier()) != null) {
-			throw new TaskIdException("Task id " + task.getTaskIdentifier().toUpperCase() + " is already available");
-		}
+		Set<Task> ownerTaskList = owner.getAssignedTasks();
+		ownerTaskList.add(task);		
+		owner.setAssignedTasks(ownerTaskList);
+		
+		Set<Task> leaderTaskList = leader.getAssignedTasks();
+		leaderTaskList.add(task);
+		leader.setAssignedTasks(leaderTaskList);
+		
+		Set<User> assignedUsers =task.getUsers();
+		assignedUsers.add(owner);
+		assignedUsers.add(leader);
+		task.setUsers(assignedUsers);
 		Task newTask = taskRepository.save(task);
-		List<Task> teamLeaderTaskList = teamLeader.getTask();
-		teamLeaderTaskList.add(task);
-		teamLeader.setTask(teamLeaderTaskList);
-		task.setTeamLeader(teamLeader);
-		teamLeaderRepository.save(teamLeader);
-		userRepository.save(user);
+		userRepository.save(leader);
+		userRepository.save(owner);
 		return newTask;
 	}
 
 	@Override
-	public void deleteTask(String taskIdentifier) {
-		// TODO Auto-generated method stub
+	public void deleteTask(String taskIdentifier) {		
+		Task task = taskRepository.findByTaskIdentifier(taskIdentifier.toUpperCase());			
+		if (task == null) {
+			throw new TaskIdException("Task with Identifer " + taskIdentifier.toUpperCase() + " doesn't exist");
+		}
+		Set<User> users = task.getUsers();
 		
+		for (Iterator<User> iterator = users.iterator(); iterator.hasNext(); iterator.hasNext()) {		    
+			if(iterator.next()==null) {
+				break;
+			}
+			User user = iterator.next();		
+		    task.removeUser(user);
+		    updateUser(user);
+			log.info(user.getLoginName());
+		}
+		taskRepository.delete(task);
 	}
 
 	@Override
 	public Task updateTask(Task task) {
-		//if user only status update
-		//if team leader whole task update
-		
-		
-		return null;
+		// checking for null task
+		if (task.getTaskIdentifier() == null) {
+			throw new NullPointerException("Please Fill the Required Fields");
+		}
+		// finding Task with provided taskIdentifier
+		Task oldTask = taskRepository.findByTaskIdentifier(task.getTaskIdentifier());
+		if (oldTask == null) {
+			throw new TaskIdException("Task with taskIdentifier : " + task.getTaskIdentifier() + " does not exists");
+		}
+		task.setId(oldTask.getId());
+		oldTask.setTitle(task.getTitle());
+		oldTask.setDescription(task.getDescription());
+		oldTask.setProgress(task.getProgress());
+		// returning updated Task
+		return taskRepository.save(oldTask);
 	}
 
 	//----------------------------------------------------------- USER LOGIN -------------------------------------------------------------------------------
@@ -252,8 +287,36 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	//------------------------------------------------------- USERTYPE : CLIENT OPERATIONS -------------------------------------------------------------------------------------
-	@Override
+/*	@Override
 	public User assignUser(String loginName, String taskIdentifier) {
+		
+	}
+	*/
+
+	@Override
+	public Task addRemark(Remark remark, String taskIdentifier) {
+		if (taskIdentifier == null || remark == null) {
+			throw new NullPointerException("Please Fill the Required Fields");
+		}
+		Task task = taskRepository.findByTaskIdentifier(taskIdentifier);
+		
+		if (task.getTaskIdentifier() == null) {
+			throw new TaskIdException("Task with Identifer" + taskIdentifier.toUpperCase() + " doesn't exist");
+		}
+		remark.setTask(task);
+		Set<Remark> remarkList = new HashSet<>();
+		if (task.getRemarks() != null) {
+			remarkList = task.getRemarks();
+		}
+		remarkList.add(remark);
+		task.setRemarks(remarkList);
+		remarkRepository.save(remark);
+		taskRepository.save(task);
+		return task;
+	}
+
+	@Override
+	public User addTasktoUser(String loginName, String taskIdentifier) {
 		User user = null;
 		Task task = null;
 		//Check for null values
@@ -270,48 +333,18 @@ public class UserServiceImpl implements UserService {
 		if ((task = taskRepository.findByTaskIdentifier(taskIdentifier)) == null) {
 			throw new TaskNotFoundException("Task with id : " + taskIdentifier + " does not exists");
 		}
-		List<Task> listOfTask = new ArrayList<>();
-		if(user.getTasks()!=null) {
-			listOfTask=user.getTasks();
+		Set<Task> listOfTask = new HashSet<>();
+		if(user.getAssignedTasks()!=null) {
+			listOfTask=user.getAssignedTasks();
 		}		
 		if(listOfTask.contains(task)) {
 			return user;
 		}
 		//assign user to task
 		listOfTask.add(task);
-		user.setTasks(listOfTask);
+		user.setAssignedTasks(listOfTask);
 		userRepository.save(user);
 		return user;
-	}
-
-	
-
-	@Override
-	public Remark addRemark(Remark remark, String taskIdentifier) {
-		if (taskIdentifier == null || remark == null) {
-			throw new NullPointerException("Please Fill the Required Fields");
-		}
-		Task task = taskRepository.findByTaskIdentifier(taskIdentifier);
-		
-		if (task.getTaskIdentifier() == null) {
-			throw new TaskIdException("Task with Identifer" + taskIdentifier.toUpperCase() + " doesn't exist");
-		}
-		remark.setTask(task);
-		List<Remark> remarkList = new ArrayList<>();
-		if (task.getRemarks() != null) {
-			remarkList = task.getRemarks();
-		}
-		remarkList.add(remark);
-		task.setRemarks(remarkList);
-		remarkRepository.save(remark);
-		taskRepository.save(task);
-		return remark;
-	}
-
-	@Override
-	public User addTasktoUser(String loginName, String taskIdentifier) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
@@ -321,10 +354,34 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User assignDeveloper(String taskIdentifier, String loginName) {
-		// TODO Auto-generated method stub
-		return null;
-	}	
+	public Task assignDeveloper(String taskIdentifier, String loginName) {
+		// get developer
+				User developer = userRepository.findByLoginName(loginName);
+				// check if available or not
+				// throw exception not found
+				if (developer == null) {
+					throw new UserNotFoundException("Developer with Identifer " + loginName + " doesn't exist");
+				}
+				Task task = taskRepository.findByTaskIdentifier(taskIdentifier);
+				if (task == null) {
+					throw new TaskIdException("Task with Identifer " + taskIdentifier.toUpperCase() + " doesn't exist");
+				}
+//				Set<Task> developerTaskList = developer.getAssignedTasks();
+				Set<User> assignedUsers =task.getUsers();
+				
+				for (Iterator<User> iterator = assignedUsers.iterator(); iterator.hasNext(); ) {
+				    if(iterator.hasNext()) {
+					User oldDeveloper = iterator.next();
+				    if (oldDeveloper.getUserType().equals("Developer")){
+				    	task.removeUser(oldDeveloper);
+					}	}
+				}							
+				task.addUser(developer);
+				userRepository.save(developer);
+//				task.setUsers(assignedUsers);
+				
+				return taskRepository.save(task);
+	}		
 
 	//******************************************************************************************************************************************************************
 }
