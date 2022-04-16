@@ -132,7 +132,7 @@ public interface UserService {
 	 * This method will be used for adding the remark for specific Task.
 	 * @param remark is the object of the Remark containing all the information about Remark.
 	 * @param task_id is the unique identifier of the task for which remark is to be added.
-	 * @return the saved Remark Object.
+	 * @return the saved Remark Object
 	 */
 	public Task addRemark(Remark remark, String taskIdentifier);
 	public void removeRemark(String remarkIdentifier, String taskIdentifier);
