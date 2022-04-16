@@ -1,23 +1,19 @@
-import logo from "./logo.svg";
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import {
-//   solid,
-//   regular,
-//   brands,
-// } from "@fortawesome/fontawesome-svg-core/import.macro"; // <-- import styles to be used
+import React from "react";
 import "./App.css";
+import RouteLinks from "./RouteLinks";
+import store from "./store";
+import { Provider } from "react-redux";
+import history from "./history";
 
 function App() {
   return (
     <div className="App">
-      <header>
-        <i class="fa-brands fa-github fa-stack-1x"></i>
-        <br />
-        {/* <FontAwesomeIcon icon={solid("user-secret")} /> */}
-        <p>Progress Inspector</p>
-      </header>
+      <Provider store={store}>
+        <div className="App">
+          <RouteLinks history={history}/>
+        </div>
+      </Provider>
     </div>
   );
 }
-
 export default App;

@@ -14,4 +14,6 @@ import edu.idol.mca.piapi.domain.Remark;
 @Repository
 public interface RemarkRepository extends JpaRepository<Remark, Long> {
 
+	Remark findByRemarkIdentifier(String remarkIdentifier);
+
 }

@@ -4,6 +4,7 @@
 package edu.idol.mca.piapi.service;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
@@ -75,7 +76,7 @@ public interface UserService {
 	 * @param taskIdentifier of the task
 	 * @return user with authorized task
 	 */
-	public User addTasktoUser(String loginName, String taskIdentifier);
+	public User addUser(String taskIdentifier, String loginName);
 	/**----------------------------------------------------------**/
 	
 	
@@ -88,22 +89,10 @@ public interface UserService {
 	 * @return list of clients
 	 */
 	public List<User> getAllUsersByUserType(String userType);
-	/**
-	 * This method will be used for adding the remark for specific Task.
-	 * @param remark is the object of the Remark containing all the information about Remark.
-	 * @param task_id is the unique identifier of the task for which remark is to be added.
-	 * @return the saved Remark Object.
-	 */
-	public Remark addRemark(Remark remark, String taskIdentifier);
 	
-	/**
-	 * This method is used to update the task status
-	 * 
-	 * @param taskIdentifer
-	 * @param task
-	 * @return updated task if all identifiers exist
-	 */
-	Task updateTaskStatus(String taskIdentifier, String loginName, Task task);
+	
+
+
 	
 	/**
 	 * This method is used to create task on basis of product owner and team leader
@@ -126,10 +115,26 @@ public interface UserService {
 	 * @param loginName of the user
 	 * @return user with assigned task
 	 */
-	public User assignDeveloper(String taskIdentifier, String loginName);
-	
+	public Task assignDeveloper(String taskIdentifier, String loginName);
+	/**
+	 * This method is used to update the task status
+	 * 
+	 * @param taskIdentifer
+	 * @param progress of the task
+	 * @return updated task if all identifiers exist
+	 */
 	public Task updateTaskStatus(String taskIdentifier, String loginName, String progress);
-	
 	//find all task by user.
+	public Set<Task> getUserTasks(String loginName);
+	public Task getUserTask(String loginName, String taskIdentifier);
+	
+	/**
+	 * This method will be used for adding the remark for specific Task.
+	 * @param remark is the object of the Remark containing all the information about Remark.
+	 * @param task_id is the unique identifier of the task for which remark is to be added.
+	 * @return the saved Remark Object.
+	 */
+	public Task addRemark(Remark remark, String taskIdentifier);
+	public void removeRemark(String remarkIdentifier, String taskIdentifier);
 
 }

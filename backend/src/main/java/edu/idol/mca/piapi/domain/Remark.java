@@ -3,6 +3,7 @@ package edu.idol.mca.piapi.domain;
 import java.util.Date;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -13,6 +14,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,6 +31,13 @@ public class Remark {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	/**
+	 * Remark Identifier given as a remark. It cannot be blank
+	 */
+	@NotBlank(message = "Remark Identifier is required")
+	@Column(unique=true, updatable=false)
+	@Size(min=2, max=4, message = "Please enter valid task indentifier size(min=2 and max=4)")
+	private String remarkIdentifier;
 	/**
 	 * Description given as a remark. It cannot be blank
 	 */
@@ -51,9 +60,9 @@ public class Remark {
 	/**
 	 * Many remarks are assigned to the task
 	 */
-	@ManyToOne(fetch= FetchType.EAGER, cascade = CascadeType.REFRESH)
-	@JoinColumn(name = "task_id", updatable= false, nullable= false)
 	@JsonIgnore
+	@ManyToOne
+	@JoinColumn(name = "task_id", updatable= false, nullable= false)	
 	private Task task;
 
 	public Remark() {
@@ -65,8 +74,9 @@ public class Remark {
 	 * @param givenBy
 	 * @param task
 	 */
-	public Remark(String description, String givenBy, Task task) {
+	public Remark(String description, String remarkIdentifier,String givenBy, Task task) {
 		super();
+		this.remarkIdentifier = remarkIdentifier;
 		this.description = description;
 		this.givenBy = givenBy;
 		this.task = task;
@@ -85,6 +95,14 @@ public class Remark {
 	}
 
 
+
+	public String getRemarkIdentifier() {
+		return remarkIdentifier;
+	}
+
+	public void setRemarkIdentifier(String remarkIdentifier) {
+		this.remarkIdentifier = remarkIdentifier;
+	}
 
 	public String getDescription() {
 		return description;

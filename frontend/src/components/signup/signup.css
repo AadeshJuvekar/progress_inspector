@@ -1,0 +1,10 @@
+.signup{
+    height: 85vh;
+    width: 100%;
+    position: relative;
+    top: 2em;
+
+}
+.signupContainer{
+    margin: 0 22%;
+}

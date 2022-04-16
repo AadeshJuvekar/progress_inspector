@@ -2,7 +2,9 @@ package edu.idol.mca.piapi.domain;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,8 +14,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -43,11 +48,16 @@ public class Task {
 	private String description;
 	
 	private String progress;
+		
 	
 	@JsonIgnore
-	@ManyToOne(fetch= FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-	@JoinColumn(name = "user_id", updatable = false, nullable = false)
-	private User user;
+	@ManyToMany(mappedBy = "assignedTasks")
+	private Set<User> users= new HashSet<>();
+	
+	//@JsonIgnore
+	@OneToMany(mappedBy = "task",cascade  = CascadeType.ALL, orphanRemoval = false)
+	private Set<Remark> remarks= new HashSet<>();
+
 	
 	@JsonFormat(pattern = "dd/MM/yyyy", timezone = "Asia/Kolkata")
 	private Date createdAt;
@@ -55,21 +65,28 @@ public class Task {
 	@JsonFormat(pattern = "dd/MM/yyyy", timezone = "Asia/Kolkata")
 	private Date updatedAt;
 	
-	
-	@OneToMany
-	private List<Remark> remarks=new ArrayList<>();
-	
 	public Task() {
 		super();
+	}	
+	
+	public Task(long id, String title,
+			String taskIdentifier,
+			String description, String progress, Set<User> users) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.taskIdentifier = taskIdentifier;
+		this.description = description;
+		this.progress = progress;
+		this.users = users;
 	}
 
-	public Task(String title, String taskIdentifer, String description, String progress, User user) {
+	public Task(String title, String taskIdentifer, String description, String progress) {
 		super();
 		this.title = title;
 		this.taskIdentifier = taskIdentifer;
 		this.description = description;
 		this.progress = progress;
-		this.user = user;
 	}
 
 	/**
@@ -80,14 +97,16 @@ public class Task {
 	 * @param user
 	 * @param remarks
 	 */
-	public Task(String title, String taskIdentifer, String description, String progress, User user,
-			List<Remark> remarks) {
+	public Task(long id, String title,
+			String taskIdentifier,
+			String description, String progress, Set<User> users,
+			Set<Remark> remarks) {
 		super();
 		this.title = title;
-		this.taskIdentifier = taskIdentifer;
+		this.taskIdentifier = taskIdentifier;
 		this.description = description;
 		this.progress = progress;
-		this.user = user;
+		this.users = users;
 		this.remarks = remarks;
 	}
 	
@@ -116,13 +135,14 @@ public class Task {
 	public void setTitle(String title) {
 		this.title = title;
 	}
+	
 
-	public String getTaskIdentifer() {
+	public String getTaskIdentifier() {
 		return taskIdentifier;
 	}
 
-	public void setTaskIdentifer(String taskIdentifer) {
-		this.taskIdentifier = taskIdentifer;
+	public void setTaskIdentifier(String taskIdentifier) {
+		this.taskIdentifier = taskIdentifier;
 	}
 
 	public String getDescription() {
@@ -141,12 +161,12 @@ public class Task {
 		this.progress = progress;
 	}
 
-	public User getUser() {
-		return user;
+	public Set<User> getUsers() {
+		return users;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUsers(Set<User> users) {
+		this.users = users;
 	}
 
 	public Date getCreatedAt() {
@@ -165,24 +185,38 @@ public class Task {
 		this.updatedAt = updatedAt;
 	}
 
-	public List<Remark> getRemarks() {
+	public Set<Remark> getRemarks() {
 		return remarks;
 	}
 
-	public void setRemarks(List<Remark> remarks) {
+	public void setRemarks(Set<Remark> remarks) {
 		this.remarks = remarks;
+	}
+	public void addUser(User user) {
+		this.users.add(user);
+		user.getAssignedTasks().add(this);
+	}
+	public void removeUser(User user) {
+		this.users.remove(user);
+		user.getAssignedTasks().remove(this);
+	}
+	public void addRemark(Remark remark) {
+		this.remarks.add(remark);
+		remark.setTask(this);
+	}
+	public void removeRemark(Remark remark) {
+		this.remarks.remove(remark);
+		remark.setTask(null);
 	}
 
 	@Override
 	public String toString() {
-		return "Task [id=" + id + ", title=" + title + ", taskIdentifer=" + taskIdentifier + ", description="
-				+ description + ", progress=" + progress + ", user=" + user + ", createdAt=" + createdAt
+		return "Task [id=" + id + ", title=" + title + ", taskIdentifier=" + taskIdentifier + ", description="
+				+ description + ", progress=" + progress + ", users=" + users + ", createdAt=" + createdAt
 				+ ", updatedAt=" + updatedAt + ", remarks=" + remarks + "]";
 	}
 
-    public Object getTaskIdentifier() {
-        return null;
-    }
+	
 	
 	
 }

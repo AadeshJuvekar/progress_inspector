@@ -1,7 +1,9 @@
 package edu.idol.mca.piapi.domain;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,7 +12,12 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -44,10 +51,12 @@ public class User {
 	@NotBlank(message = "Please Select User Type")
 	private String userType;
 	
-	@JsonIgnore
-	@OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER, mappedBy = "user")
-	private List<Task> tasks= new ArrayList<>();
+	//@JsonIgnore
+	@ManyToMany
+	@JoinTable(name = "assigned_tasks", joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name="task_id"))
+	private Set<Task> assignedTasks= new HashSet<>();
 
+	
 	public User() {
 		super();
 	}
@@ -59,13 +68,13 @@ public class User {
 	 * @param userType
 	 * @param tasks
 	 */
-	public User(String name, String loginName, String pwd, String userType, List<Task> tasks) {
+	public User(String name, String loginName, String pwd, String userType, Set<Task> assignedTasks) {
 		super();
 		this.name = name;
 		this.loginName = loginName;
 		this.pwd = pwd;
 		this.userType = userType;
-		this.tasks = tasks;
+		this.assignedTasks = assignedTasks;
 	}
 
 	public long getId() {
@@ -108,14 +117,14 @@ public class User {
 		this.userType = userType;
 	}
 
-	public List<Task> getTasks() {
-		return tasks;
+	public Set<Task> getAssignedTasks() {
+		return assignedTasks;
 	}
 
-	public void setTasks(List<Task> tasks) {
-		this.tasks = tasks;
+	public void setAssignedTasks(Set<Task> assignedTasks) {
+		this.assignedTasks = assignedTasks;
 	}
-	
+
 	
 	
 }
